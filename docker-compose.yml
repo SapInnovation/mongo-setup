@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  mongo-primary:
+    image: "mongo-start"
+    build: ./mongo-primary
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/db:/data/db
+    depends_on:
+      - mongo-secondary-1
+      - mongo-secondary-2
+
+  mongo-secondary-1:
+    image: mongo:3.6-jessie
+    command: --replSet replica-set --smallfiles --oplogSize 128
+    ports:
+      - "27018:27017"
+
+  mongo-secondary-2:
+    image: mongo:3.6-jessie
+    command: --replSet replica-set --smallfiles --oplogSize 128
+    ports:
+      - "27019:27017"
+
+  mongosetup:
+    container_name: "setup-rs"
+    image: "setup-rs"
+    build: ./setup-rs
+    depends_on:
+      - mongo-primary
+
+  adminmongo:
+      image: "mrvautin/adminmongo"
+      ports:
+        - "1234:1234"
